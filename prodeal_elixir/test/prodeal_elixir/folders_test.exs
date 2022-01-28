@@ -3,23 +3,27 @@ defmodule ProdealElixir.FoldersTest do
 
   alias ProdealElixir.Folders
 
-  describe "folders" do
-    alias ProdealElixir.Folders.Folder
+  alias ProdealElixir.Folders.Folder
 
-    import ProdealElixir.FoldersFixtures
+  import ProdealElixir.FoldersFixtures
 
-    @invalid_attrs %{item_name: nil, parent_id: nil, priority: nil}
+  @invalid_attrs %{item_name: nil, parent_id: nil, priority: nil}
 
+  describe "list folders" do
     test "list_folders/0 returns all folders" do
       folder = folder_fixture()
       assert Folders.list_folders() == [folder]
     end
+  end
 
+  describe "get folder" do
     test "get_folder!/1 returns the folder with given id" do
       folder = folder_fixture()
       assert Folders.get_folder!(folder.id) == folder
     end
+  end
 
+  describe "create folder" do
     test "create_folder/1 with valid data creates a folder" do
       valid_attrs = %{item_name: "some item_name", parent_id: nil, priority: 42}
 
@@ -43,7 +47,9 @@ defmodule ProdealElixir.FoldersTest do
       assert folder.parent_id == parent_folder.id
       assert folder.priority == 42
     end
+  end
 
+  describe "update folder" do
     test "update_folder/2 with valid data updates the folder" do
       folder = folder_fixture()
       update_attrs = %{item_name: "some updated item_name", parent_id: nil, priority: 43}
@@ -60,14 +66,18 @@ defmodule ProdealElixir.FoldersTest do
       assert {:error, %Ecto.Changeset{}} = Folders.update_folder(folder, @invalid_attrs)
       assert folder == Folders.get_folder!(folder.id)
     end
+  end
 
+  describe "delete folder" do
     test "delete_folder/1 deletes the folder" do
       folder = folder_fixture()
 
       assert {:ok, %Folder{}} = Folders.delete_folder(folder)
       assert_raise Ecto.NoResultsError, fn -> Folders.get_folder!(folder.id) end
     end
+  end
 
+  describe "change folder" do
     test "change_folder/1 returns a folder changeset" do
       folder = folder_fixture()
 
