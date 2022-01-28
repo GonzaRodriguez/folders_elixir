@@ -14,6 +14,11 @@ defmodule ProdealElixir.FoldersTest do
       folder = folder_fixture()
       assert Folders.list_folders() == [folder]
     end
+
+    test "list_folders/2 returns all folders" do
+      folder = folder_fixture()
+      assert Folders.list_folders(0, 20) == [folder]
+    end
   end
 
   describe "get folder" do
