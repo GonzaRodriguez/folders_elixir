@@ -114,4 +114,32 @@ defmodule ProdealElixir.FoldersTest do
       assert %Ecto.Changeset{} = Folders.change_folder(folder)
     end
   end
+
+  describe "sort folders" do
+    test "sort_folders_by/1 returns ordered folders decrementally" do
+      %Folder{} = folder_fixture(%{priority: 4})
+      %Folder{} = folder_fixture(%{priority: 3})
+
+      {:ok, [first | [last]]} = Folders.sort_folders_by(:priority, :desc)
+
+      assert first.priority == 4
+      assert last.priority == 3
+    end
+
+    test "sort_folders_by/1 returns ordered folders incrementally" do
+      %Folder{} = folder_fixture(%{priority: 3})
+      %Folder{} = folder_fixture(%{priority: 4})
+
+      {:ok, [first | [last]]} = Folders.sort_folders_by(:priority, :asc)
+
+      assert first.priority == 3
+      assert last.priority == 4
+    end
+
+    test "sort_folders_by/1 when clause not matching" do
+      {:error, error} = Folders.sort_folders_by(:other_field, :desc)
+
+      assert error == :invalid_sorting_arguments
+    end
+  end
 end
