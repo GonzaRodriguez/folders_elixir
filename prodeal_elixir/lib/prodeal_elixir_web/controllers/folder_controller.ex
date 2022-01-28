@@ -80,4 +80,50 @@ defmodule ProdealElixirWeb.FolderController do
        when is_integer(page) and is_integer(per_page) do
     (page - 1) * per_page
   end
+
+  @spec get_prev_page(nil | integer()) :: nil | String.t()
+  defp get_prev_page(page) do
+    page_int = unless is_nil(page), do: String.to_integer(page), else: 1
+
+    if page_int > 1 && !is_nil(page_int), do: "#{page_int - 1}", else: nil
+  end
+
+  @spec get_next_page(integer(), nil | String.t(), nil | String.t()) :: nil | String.t()
+  defp get_next_page(folders_count, per_page, page) do
+    page_int = unless is_nil(page), do: String.to_integer(page), else: 1
+
+    per_page_int =
+      unless is_nil(per_page), do: String.to_integer(per_page), else: @default_per_page
+
+    last_page = folders_count < per_page_int
+
+    if last_page, do: nil, else: "#{page_int + 1}"
+  end
+
+  @spec get_total_pages(integer(), nil | integer()) :: String.t()
+  defp get_total_pages(folders_count, per_page) when is_nil(per_page) do
+    get_total_pages(folders_count, @default_per_page)
+  end
+
+  defp get_total_pages(folders_count, per_page) when is_binary(per_page) do
+    get_total_pages(folders_count, String.to_integer(per_page))
+  end
+
+  defp get_total_pages(folders_count, per_page) when is_integer(per_page) do
+    total_pages = ceil(folders_count / per_page)
+
+    "#{total_pages}"
+  end
+
+  @spec get_pagination_data(nil | integer(), nil | integer()) :: map
+  defp get_pagination_data(page, per_page) do
+    folders_count = length(Folders.list_folders())
+
+    %{
+      prev_page: get_prev_page(page),
+      next_page: get_next_page(folders_count, per_page, page),
+      per_page: per_page || @default_per_page,
+      total_pages: get_total_pages(folders_count, per_page)
+    }
+  end
 end
