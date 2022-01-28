@@ -11,7 +11,9 @@ defmodule ProdealElixirWeb.FolderController do
     offset = calculate_pagination_offset(params["page"], limit)
 
     with {:ok, folders} <- Folders.get_folders_by(:item_name, item_name, offset, limit) do
-      render(conn, "index.json", folders: folders)
+      pagintation_data = get_pagination_data(params["page"], params["per_page"])
+
+      render(conn, "index.json", %{folders: folders, pagination_data: pagintation_data})
     else
       {:error, error} ->
         conn
@@ -29,7 +31,9 @@ defmodule ProdealElixirWeb.FolderController do
            cast_params(params),
          {:ok, folders} <-
            Folders.sort_folders_by(casted_sort_term, casted_order_term, offset, limit) do
-      render(conn, "index.json", folders: folders)
+      pagintation_data = get_pagination_data(params["page"], params["per_page"])
+
+      render(conn, "index.json", %{folders: folders, pagination_data: pagintation_data})
     else
       {:error, error} ->
         conn
@@ -45,7 +49,8 @@ defmodule ProdealElixirWeb.FolderController do
 
     folders = Folders.list_folders(offset, limit)
 
-    render(conn, "index.json", folders: folders)
+    pagintation_data = get_pagination_data(params["page"], params["per_page"])
+    render(conn, "index.json", %{folders: folders, pagination_data: pagintation_data})
   end
 
   defp cast_params(%{"sort_by" => sort_term, "order_by" => order_term}) do
