@@ -26,7 +26,7 @@ defmodule ProdealElixir.FoldersTest do
       %Folder{item_name: item_name} =
         folder_to_be_filtered = folder_fixture(%{item_name: "filtering_test"})
 
-      filtered_folders = Folders.get_folders_by(item_name)
+      {:ok, filtered_folders} = Folders.get_folders_by(:item_name, item_name)
 
       assert filtered_folders == [folder_to_be_filtered]
       assert length(filtered_folders) == 1
@@ -39,9 +39,17 @@ defmodule ProdealElixir.FoldersTest do
         folder_fixture(%{item_name: item_name})
       end)
 
-      filtered_folders = Folders.get_folders_by(item_name)
+      {:ok, filtered_folders} = Folders.get_folders_by(:item_name, item_name)
 
       assert length(filtered_folders) == 6
+    end
+
+    test "get_folders_by/1 when clause not matching" do
+      item_name = "filtering_test"
+
+      {:error, error} = Folders.get_folders_by(:other_field, item_name)
+
+      assert error == :invalid_filtering_arguments
     end
   end
 
