@@ -16,6 +16,15 @@ defmodule ProdealElixir.Folders do
   end
 
   @doc """
+  Gets folders by item_name.
+  """
+  def get_folders_by(search_value) do
+    query = from f in Folder, where: f.item_name == ^search_value, select: f
+
+    Repo.all(query)
+  end
+
+  @doc """
   Gets a single folder.
   """
   def get_folder!(id), do: Repo.get!(Folder, id)
