@@ -11,8 +11,16 @@ defmodule ProdealElixir.Folders do
   @doc """
   Returns the list of folders.
   """
-  def list_folders do
-    Repo.all(Folder)
+  @spec list_folders() :: [%Folder{}]
+  def list_folders() do
+    from(f in Folder, select: f)
+    |> Repo.all()
+  end
+
+  @spec list_folders(integer(), integer()) :: [%Folder{}]
+  def list_folders(offset, limit) do
+    from(f in Folder, limit: ^limit, offset: ^offset, select: f)
+    |> Repo.all()
   end
 
   @doc """
