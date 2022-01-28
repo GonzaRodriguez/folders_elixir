@@ -7,6 +7,8 @@ defmodule ProdealElixirWeb.Router do
 
   scope "/api", ProdealElixirWeb do
     pipe_through :api
+
+    get "/folders", FolderController, :index
   end
 
   # Enables LiveDashboard only for development
