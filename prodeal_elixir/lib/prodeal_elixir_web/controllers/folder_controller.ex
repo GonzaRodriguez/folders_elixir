@@ -43,4 +43,31 @@ defmodule ProdealElixirWeb.FolderController do
   end
 
   defp cast_params(_params), do: {:error, :invalid_params}
+
+  @default_per_page 2
+
+  @spec calculate_pagination_limit(nil | String.t()) :: integer()
+  defp calculate_pagination_limit(per_page) when is_nil(per_page) do
+    @default_per_page
+  end
+
+  defp calculate_pagination_limit(per_page) when is_binary(per_page) do
+    per_page |> String.to_integer()
+  end
+
+  @spec calculate_pagination_offset(nil | String.t() | integer(), integer()) :: integer()
+  defp calculate_pagination_offset(page, per_page)
+       when is_nil(page) do
+    calculate_pagination_offset(1, per_page)
+  end
+
+  defp calculate_pagination_offset(page, per_page)
+       when is_binary(page) do
+    page |> String.to_integer() |> calculate_pagination_offset(per_page)
+  end
+
+  defp calculate_pagination_offset(page, per_page)
+       when is_integer(page) and is_integer(per_page) do
+    (page - 1) * per_page
+  end
 end
