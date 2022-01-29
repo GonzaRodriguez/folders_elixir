@@ -121,6 +121,25 @@ defmodule ProdealElixir.FoldersTest do
       assert last.priority == 4
     end
 
+    test "list_folders_sorting/4 returns ordered folders containing its path_name" do
+      %Folder{id: root_id} = folder_fixture(%{priority: 1, item_name: "Root"})
+
+      %Folder{id: folder_id} =
+        folder_fixture(%{priority: 2, item_name: "Folder", parent_id: root_id})
+
+      %Folder{} = folder_fixture(%{priority: 3, item_name: "Sub Folder", parent_id: folder_id})
+
+      order_method = Enum.random([:desc, :asc])
+
+      {:ok, sorted_folders} = Folders.list_folders_sorting(:priority, order_method, 0, 20)
+
+      expected_path_names = ["Root", "Root/Folder", "Root/Folder/Sub Folder"]
+
+      Enum.each(sorted_folders, fn folder ->
+        assert folder.path_name in expected_path_names
+      end)
+    end
+
     test "list_folders_sorting/4 when clause not matching" do
       {:error, error} = Folders.list_folders_sorting(:other_field, :desc, 0, 20)
 
