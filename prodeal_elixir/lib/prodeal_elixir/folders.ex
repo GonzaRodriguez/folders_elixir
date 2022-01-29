@@ -146,4 +146,20 @@ defmodule ProdealElixir.Folders do
   def change_folder(%Folder{} = folder, attrs \\ %{}) do
     Folder.changeset(folder, attrs)
   end
+
+  @spec calculate_folders_path_name([%Folder{}]) :: [%Folder{}]
+  defp calculate_folders_path_name(folders) do
+    folders
+    |> Enum.map(fn folder ->
+      path_name = calculate_folder_path_name(folder)
+
+      Map.merge(folder, %{path_name: path_name})
+    end)
+  end
+
+  @spec calculate_folder_path_name(%Folder{}) :: String.t()
+  defp calculate_folder_path_name(folder) when is_nil(folder.parent_id), do: folder.item_name
+
+  defp calculate_folder_path_name(folder),
+    do: calculate_folder_path_name(folder.parent) <> "/" <> folder.item_name
 end
