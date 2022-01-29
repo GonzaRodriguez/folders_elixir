@@ -70,7 +70,9 @@ defmodule ProdealElixirWeb.FolderControllerTest do
 
       conn = get(conn, Routes.folder_path(conn, :index, %{sort_by: "priority", order_by: "asc"}))
 
-      sorted_priorities = sorted_folders_priorities(:asc)
+      sorted_priorities =
+        Folders.list_folders()
+        |> sorted_folders_priorities(:asc)
 
       json_response(conn, 200)["data"]
       |> Enum.map(fn %{"priority" => priority} -> priority end)
@@ -83,7 +85,9 @@ defmodule ProdealElixirWeb.FolderControllerTest do
 
       conn = get(conn, Routes.folder_path(conn, :index, %{sort_by: "priority", order_by: "desc"}))
 
-      sorted_priorities = sorted_folders_priorities(:desc)
+      sorted_priorities =
+        Folders.list_folders()
+        |> sorted_folders_priorities(:desc)
 
       json_response(conn, 200)["data"]
       |> Enum.map(fn %{"priority" => priority} -> priority end)
@@ -96,7 +100,9 @@ defmodule ProdealElixirWeb.FolderControllerTest do
 
       conn = get(conn, Routes.folder_path(conn, :index, %{sort_by: "priority"}))
 
-      sorted_priorities = sorted_folders_priorities(:desc)
+      sorted_priorities =
+        Folders.list_folders()
+        |> sorted_folders_priorities(:desc)
 
       json_response(conn, 200)["data"]
       |> Enum.map(fn %{"priority" => priority} -> priority end)
@@ -128,8 +134,8 @@ defmodule ProdealElixirWeb.FolderControllerTest do
     end
   end
 
-  defp sorted_folders_priorities(order_by) when order_by in [:asc, :desc] do
-    Folders.list_folders()
+  defp sorted_folders_priorities(folders, order_by) when order_by in [:asc, :desc] do
+    folders
     |> Enum.sort_by(& &1.priority, order_by)
     |> Enum.map(fn %Folder{priority: priority} -> priority end)
   end
