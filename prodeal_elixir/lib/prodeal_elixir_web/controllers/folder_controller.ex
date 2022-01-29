@@ -14,11 +14,16 @@ defmodule ProdealElixirWeb.FolderController do
     limit = conn.assigns[:pagination].per_page
     offset = calculate_pagination_offset(conn.assigns[:pagination].page, limit)
 
-    with {:ok, %{sort_term: casted_sort_term, order_term: casted_order_term}} <-
+    with {:ok,
+          %{
+            sort_term: casted_sort_term,
+            order_term: casted_order_term,
+            filter_by: casted_filter_by
+          }} <-
            cast_params(params),
          {:ok, folders} <-
            Folders.filter_and_sort_folders(
-             :item_name,
+             casted_filter_by,
              item_name,
              casted_sort_term,
              casted_order_term,
@@ -42,11 +47,13 @@ defmodule ProdealElixirWeb.FolderController do
     end
   end
 
-  def index(conn, %{"item_name" => item_name}) do
+  def index(conn, %{"item_name" => item_name} = params) do
     limit = conn.assigns[:pagination].per_page
     offset = calculate_pagination_offset(conn.assigns[:pagination].page, limit)
 
-    with {:ok, folders} <- Folders.get_folders_by(:item_name, item_name, offset, limit) do
+    with {:ok, %{filter_by: casted_filter_by}} <-
+           cast_params(params),
+         {:ok, folders} <- Folders.get_folders_by(casted_filter_by, item_name, offset, limit) do
       pagintation_data =
         get_pagination_data(
           length(folders),
@@ -104,6 +111,23 @@ defmodule ProdealElixirWeb.FolderController do
 
     render(conn, "index.json", %{folders: folders, pagination_data: pagintation_data})
   end
+
+  defp cast_params(%{"item_name" => _filter, "sort_by" => sort_term} = params) do
+    order_by =
+      unless is_nil(params["order_by"]),
+        do: String.to_atom(params["order_by"]),
+        else: @default_order_by
+
+    {:ok,
+     %{
+       sort_term: String.to_atom(sort_term),
+       order_term: order_by,
+       filter_by: String.to_atom("item_name")
+     }}
+  end
+
+  defp cast_params(%{"item_name" => _filter}),
+    do: {:ok, %{filter_by: String.to_atom("item_name")}}
 
   defp cast_params(%{"sort_by" => sort_term} = params) do
     order_by =
