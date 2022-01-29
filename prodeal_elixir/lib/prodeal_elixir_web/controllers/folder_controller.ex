@@ -8,6 +8,8 @@ defmodule ProdealElixirWeb.FolderController do
 
   plug ProdealElixir.PaginationParams, :pagination when action in [:index]
 
+  @default_order_by :desc
+
   def index(conn, %{"item_name" => item_name}) do
     limit = conn.assigns[:pagination].per_page
     offset = calculate_pagination_offset(conn.assigns[:pagination].page, limit)
@@ -26,11 +28,11 @@ defmodule ProdealElixirWeb.FolderController do
     end
   end
 
-  def index(conn, %{"sort_by" => _sort_term, "order_by" => _order_method} = params) do
+  def index(conn, %{"sort_by" => _sort_term} = params) do
     limit = conn.assigns[:pagination].per_page
     offset = calculate_pagination_offset(conn.assigns[:pagination].page, limit)
 
-    with {:ok, %{sort_term: casted_sort_term, order_term: casted_order_term} = _casted_params} <-
+    with {:ok, %{sort_term: casted_sort_term, order_term: casted_order_term}} <-
            cast_params(params),
          {:ok, folders} <-
            Folders.sort_folders_by(casted_sort_term, casted_order_term, offset, limit) do
@@ -59,8 +61,13 @@ defmodule ProdealElixirWeb.FolderController do
     render(conn, "index.json", %{folders: folders, pagination_data: pagintation_data})
   end
 
-  defp cast_params(%{"sort_by" => sort_term, "order_by" => order_term}) do
-    {:ok, %{sort_term: String.to_atom(sort_term), order_term: String.to_atom(order_term)}}
+  defp cast_params(%{"sort_by" => sort_term} = params) do
+    order_by =
+      unless is_nil(params["order_by"]),
+        do: String.to_atom(params["order_by"]),
+        else: @default_order_by
+
+    {:ok, %{sort_term: String.to_atom(sort_term), order_term: order_by}}
   end
 
   defp cast_params(_params), do: {:error, :invalid_params}
