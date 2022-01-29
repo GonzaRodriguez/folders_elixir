@@ -6,6 +6,8 @@ defmodule ProdealElixirWeb.FolderController do
 
   action_fallback ProdealElixirWeb.FallbackController
 
+  plug ProdealElixir.PaginationParams, :pagination when action in [:index]
+
   def index(conn, %{"item_name" => item_name} = params) do
     limit = calculate_pagination_limit(params["per_page"])
     offset = calculate_pagination_offset(params["page"], limit)
