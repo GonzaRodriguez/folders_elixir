@@ -10,7 +10,7 @@ defmodule ProdealElixirWeb.FolderController do
 
   def index(conn, %{"item_name" => item_name} = params) do
     limit = conn.assigns[:pagination].per_page
-    offset = calculate_pagination_offset(params["page"], limit)
+    offset = calculate_pagination_offset(conn.assigns[:pagination].page, limit)
 
     with {:ok, folders} <- Folders.get_folders_by(:item_name, item_name, offset, limit) do
       pagintation_data = get_pagination_data(params["page"], params["per_page"])
@@ -27,7 +27,7 @@ defmodule ProdealElixirWeb.FolderController do
 
   def index(conn, %{"sort_by" => _sort_term, "order_by" => _order_method} = params) do
     limit = conn.assigns[:pagination].per_page
-    offset = calculate_pagination_offset(params["page"], limit)
+    offset = calculate_pagination_offset(conn.assigns[:pagination].page, limit)
 
     with {:ok, %{sort_term: casted_sort_term, order_term: casted_order_term} = _casted_params} <-
            cast_params(params),
@@ -47,7 +47,7 @@ defmodule ProdealElixirWeb.FolderController do
 
   def index(conn, params) do
     limit = conn.assigns[:pagination].per_page
-    offset = calculate_pagination_offset(params["page"], limit)
+    offset = calculate_pagination_offset(conn.assigns[:pagination].page, limit)
 
     folders = Folders.list_folders(offset, limit)
 
@@ -63,17 +63,7 @@ defmodule ProdealElixirWeb.FolderController do
 
   @default_per_page 2
 
-  @spec calculate_pagination_offset(nil | String.t() | integer(), integer()) :: integer()
-  defp calculate_pagination_offset(page, per_page)
-       when is_nil(page) do
-    calculate_pagination_offset(1, per_page)
-  end
-
-  defp calculate_pagination_offset(page, per_page)
-       when is_binary(page) do
-    page |> String.to_integer() |> calculate_pagination_offset(per_page)
-  end
-
+  @spec calculate_pagination_offset(integer(), integer()) :: integer()
   defp calculate_pagination_offset(page, per_page)
        when is_integer(page) and is_integer(per_page) do
     (page - 1) * per_page
