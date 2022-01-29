@@ -22,7 +22,7 @@ defmodule ProdealElixirWeb.FolderController do
           }} <-
            cast_params(params),
          {:ok, folders} <-
-           Folders.filter_and_sort_folders(
+           Folders.list_folders_filtering_and_sorting(
              casted_filter_by,
              item_name,
              casted_sort_term,
@@ -53,7 +53,8 @@ defmodule ProdealElixirWeb.FolderController do
 
     with {:ok, %{filter_by: casted_filter_by}} <-
            cast_params(params),
-         {:ok, folders} <- Folders.get_folders_by(casted_filter_by, item_name, offset, limit) do
+         {:ok, folders} <-
+           Folders.list_folders_filtering(casted_filter_by, item_name, offset, limit) do
       pagintation_data =
         get_pagination_data(
           length(folders),
@@ -78,7 +79,7 @@ defmodule ProdealElixirWeb.FolderController do
     with {:ok, %{sort_term: casted_sort_term, order_term: casted_order_term}} <-
            cast_params(params),
          {:ok, folders} <-
-           Folders.sort_folders_by(casted_sort_term, casted_order_term, offset, limit) do
+           Folders.list_folders_sorting(casted_sort_term, casted_order_term, offset, limit) do
       pagintation_data =
         get_pagination_data(
           length(folders),
@@ -100,7 +101,7 @@ defmodule ProdealElixirWeb.FolderController do
     limit = conn.assigns[:pagination].per_page
     offset = calculate_pagination_offset(conn.assigns[:pagination].page, limit)
 
-    folders = Folders.list_folders(offset, limit)
+    {:ok, folders} = Folders.list_folders(offset, limit)
 
     pagintation_data =
       get_pagination_data(
