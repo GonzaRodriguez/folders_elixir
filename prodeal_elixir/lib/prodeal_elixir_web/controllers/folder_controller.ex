@@ -10,6 +10,34 @@ defmodule ProdealElixirWeb.FolderController do
 
   @default_order_by :desc
 
+  def index(conn, %{"item_name" => item_name, "sort_by" => _sort_term} = params) do
+    limit = conn.assigns[:pagination].per_page
+    offset = calculate_pagination_offset(conn.assigns[:pagination].page, limit)
+
+    with {:ok, %{sort_term: casted_sort_term, order_term: casted_order_term}} <-
+           cast_params(params),
+         {:ok, folders} <-
+           Folders.filter_and_sort_folders(
+             :item_name,
+             item_name,
+             casted_sort_term,
+             casted_order_term,
+             offset,
+             limit
+           ) do
+      pagintation_data =
+        get_pagination_data(conn.assigns[:pagination].page, conn.assigns[:pagination].per_page)
+
+      render(conn, "index.json", %{folders: folders, pagination_data: pagintation_data})
+    else
+      {:error, error} ->
+        conn
+        |> put_status(:unprocessable_entity)
+        |> put_view(ProdealElixirTestWeb.FolderView)
+        |> render("custom_errors.json", error: error)
+    end
+  end
+
   def index(conn, %{"item_name" => item_name}) do
     limit = conn.assigns[:pagination].per_page
     offset = calculate_pagination_offset(conn.assigns[:pagination].page, limit)
