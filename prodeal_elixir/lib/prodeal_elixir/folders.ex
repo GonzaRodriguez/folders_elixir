@@ -117,27 +117,39 @@ defmodule ProdealElixir.Folders do
           integer()
         ) :: {:ok, [%Folder{}]} | {:error, String.t()}
   def list_folders_filtering_and_sorting(:item_name, filter, :priority, :asc, offset, limit) do
-    query =
-      from f in Folder,
+    sub_query = from sf in Folder, preload: [:parent], select: sf
+
+    folders_with_path_name =
+      from(f in Folder,
+        preload: [parent: ^sub_query],
         where: f.item_name == ^filter,
         order_by: [asc: f.priority],
         limit: ^limit,
         offset: ^offset,
         select: f
+      )
+      |> Repo.all()
+      |> calculate_folders_path_name()
 
-    {:ok, Repo.all(query)}
+    {:ok, folders_with_path_name}
   end
 
   def list_folders_filtering_and_sorting(:item_name, filter, :priority, :desc, offset, limit) do
-    query =
-      from f in Folder,
+    sub_query = from sf in Folder, preload: [:parent], select: sf
+
+    folders_with_path_name =
+      from(f in Folder,
+        preload: [parent: ^sub_query],
         where: f.item_name == ^filter,
         order_by: [desc: f.priority],
         limit: ^limit,
         offset: ^offset,
         select: f
+      )
+      |> Repo.all()
+      |> calculate_folders_path_name()
 
-    {:ok, Repo.all(query)}
+    {:ok, folders_with_path_name}
   end
 
   def list_folders_filtering_and_sorting(
