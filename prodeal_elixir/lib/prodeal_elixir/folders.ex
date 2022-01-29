@@ -28,9 +28,14 @@ defmodule ProdealElixir.Folders do
   """
   @spec list_folders(integer(), integer()) :: {:ok, [%Folder{}]}
   def list_folders(offset, limit) do
-    query = from(f in Folder, limit: ^limit, offset: ^offset, select: f)
+    sub_query = from sf in Folder, preload: [:parent], select: sf
 
-    {:ok, Repo.all(query)}
+    folders_with_path_name =
+      from(f in Folder, preload: [parent: ^sub_query], limit: ^limit, offset: ^offset, select: f)
+      |> Repo.all()
+      |> calculate_folders_path_name()
+
+    {:ok, folders_with_path_name}
   end
 
   @doc """
