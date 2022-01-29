@@ -10,13 +10,25 @@ defmodule ProdealElixir.FoldersTest do
   @invalid_attrs %{item_name: nil, parent_id: nil, priority: nil}
 
   describe "list folders" do
-    @invalid_attrs %{item_name: nil, parent_id: nil, priority: nil}
-
     test "list_folders/0 returns all folders" do
-      folder = folder_fixture()
+      %Folder{id: id} = folder_fixture()
+      {:ok, [folder]} = Folders.list_folders()
+
+      assert folder.id == id
+    end
+
+    test "list_folders/0 returns all folders with path_name" do
+      %Folder{id: root_id} = folder_fixture(%{item_name: "Root"})
+      %Folder{id: folder_id} = folder_fixture(%{item_name: "Folder", parent_id: root_id})
+      %Folder{} = folder_fixture(%{item_name: "Sub Folder", parent_id: folder_id})
+
       {:ok, folders} = Folders.list_folders()
 
-      assert folders == [folder]
+      expected_path_names = ["Root", "Root/Folder", "Root/Folder/Sub Folder"]
+
+      Enum.each(folders, fn folder ->
+        assert folder.path_name in expected_path_names
+      end)
     end
 
     test "list_folders/2 returns all folders" do
