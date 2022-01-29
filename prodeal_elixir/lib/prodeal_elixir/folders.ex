@@ -69,17 +69,37 @@ defmodule ProdealElixir.Folders do
   @spec list_folders_sorting(sort_by :: atom, order_by :: String.t(), integer(), integer()) ::
           {:ok, [%Folder{}]} | {:error, String.t()}
   def list_folders_sorting(:priority, :desc, offset, limit) do
-    query =
-      from f in Folder, order_by: [desc: f.priority], limit: ^limit, offset: ^offset, select: f
+    sub_query = from sf in Folder, preload: [:parent], select: sf
 
-    {:ok, Repo.all(query)}
+    folders_with_path_name =
+      from(f in Folder,
+        preload: [parent: ^sub_query],
+        order_by: [desc: f.priority],
+        limit: ^limit,
+        offset: ^offset,
+        select: f
+      )
+      |> Repo.all()
+      |> calculate_folders_path_name()
+
+    {:ok, folders_with_path_name}
   end
 
   def list_folders_sorting(:priority, :asc, offset, limit) do
-    query =
-      from f in Folder, order_by: [asc: f.priority], limit: ^limit, offset: ^offset, select: f
+    sub_query = from sf in Folder, preload: [:parent], select: sf
 
-    {:ok, Repo.all(query)}
+    folders_with_path_name =
+      from(f in Folder,
+        preload: [parent: ^sub_query],
+        order_by: [asc: f.priority],
+        limit: ^limit,
+        offset: ^offset,
+        select: f
+      )
+      |> Repo.all()
+      |> calculate_folders_path_name()
+
+    {:ok, folders_with_path_name}
   end
 
   def list_folders_sorting(_sort_by, _order_by, _offset, _limit),
