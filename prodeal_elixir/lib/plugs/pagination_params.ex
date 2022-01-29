@@ -17,4 +17,6 @@ defmodule ProdealElixir.PaginationParams do
     |> validate_number(:per_page, greater_than_or_equal_to: 1)
     |> validate_number(:per_page, less_than_or_equal_to: 50)
   end
+
+  def per_page_default, do: @per_page_default
 end
