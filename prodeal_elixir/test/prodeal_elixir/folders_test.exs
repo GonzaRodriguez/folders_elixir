@@ -172,6 +172,34 @@ defmodule ProdealElixir.FoldersTest do
       assert last.priority == 4
     end
 
+    test "list_folders_filtering_and_sorting/6 returns filtered and ordered folders containing its path_name" do
+      %Folder{id: root_id} = folder_fixture(%{item_name: "filter", priority: 3})
+
+      %Folder{id: folder_id} =
+        folder_fixture(%{item_name: "filter", priority: 2, parent_id: root_id})
+
+      %Folder{} = folder_fixture(%{item_name: "filter", priority: 1, parent_id: folder_id})
+      %Folder{} = folder_fixture(%{item_name: "other_filter", priority: 6})
+
+      order_method = Enum.random([:desc, :asc])
+
+      {:ok, filter_sort_folders} =
+        Folders.list_folders_filtering_and_sorting(
+          :item_name,
+          "filter",
+          :priority,
+          order_method,
+          0,
+          20
+        )
+
+      expected_path_names = ["filter", "filter/filter", "filter/filter/filter"]
+
+      Enum.each(filter_sort_folders, fn folder ->
+        assert folder.path_name in expected_path_names
+      end)
+    end
+
     test "list_folders_filtering_and_sorting/6 when clause not matching" do
       {:error, error} =
         Folders.list_folders_filtering_and_sorting(:item_name, "name", :other_field, :desc, 0, 20)
