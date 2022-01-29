@@ -6,7 +6,7 @@ defmodule ProdealElixir.Folders.Folder do
     field :item_name, :string
     field :priority, :integer
 
-    belongs_to :parent, ProdealElixirTest.Folders.Folder
+    belongs_to :parent, ProdealElixir.Folders.Folder
 
     timestamps()
   end
