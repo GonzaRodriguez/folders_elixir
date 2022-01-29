@@ -138,7 +138,7 @@ defmodule ProdealElixirWeb.FolderControllerTest do
 
       assert PaginationParams.per_page_default() == length(json_response(conn, 200)["data"])
 
-      assert %{"next_page" => "2", "per_page" => "2", "prev_page" => nil, "total_pages" => "3"} ==
+      assert %{"next_page" => "2", "per_page" => "2", "prev_page" => nil, "total_pages" => "1"} ==
                json_response(conn, 200)["pagination_data"]
     end
 
@@ -147,7 +147,7 @@ defmodule ProdealElixirWeb.FolderControllerTest do
 
       assert 3 == length(json_response(conn, 200)["data"])
 
-      assert %{"next_page" => "3", "per_page" => "3", "prev_page" => "1", "total_pages" => "2"} ==
+      assert %{"next_page" => "3", "per_page" => "3", "prev_page" => "1", "total_pages" => "1"} ==
                json_response(conn, 200)["pagination_data"]
     end
   end
