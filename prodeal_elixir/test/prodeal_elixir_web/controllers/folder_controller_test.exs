@@ -89,6 +89,19 @@ defmodule ProdealElixirWeb.FolderControllerTest do
       |> Enum.map(fn %{"priority" => priority} -> priority end)
       |> assert(sorted_priorities)
     end
+
+    test "when sorting folders by priority ordered by default", %{conn: conn} do
+      %Folder{} = folder_fixture(%{priority: 4})
+      %Folder{} = folder_fixture(%{priority: 3})
+
+      conn = get(conn, Routes.folder_path(conn, :index, %{sort_by: "priority"}))
+
+      sorted_priorities = sorted_folders_priorities(:desc)
+
+      json_response(conn, 200)["data"]
+      |> Enum.map(fn %{"priority" => priority} -> priority end)
+      |> assert(sorted_priorities)
+    end
   end
 
   describe "pagination" do
