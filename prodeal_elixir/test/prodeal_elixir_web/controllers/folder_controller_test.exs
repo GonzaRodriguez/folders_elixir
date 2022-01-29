@@ -29,7 +29,8 @@ defmodule ProdealElixirWeb.FolderControllerTest do
                  "id" => id,
                  "item_name" => item_name,
                  "parent_id" => parent_id,
-                 "priority" => priority
+                 "priority" => priority,
+                 "path_name" => "some item_name"
                }
              ] == json_response(conn, 200)["data"]
     end
@@ -51,7 +52,8 @@ defmodule ProdealElixirWeb.FolderControllerTest do
                  "id" => id,
                  "item_name" => item_name,
                  "parent_id" => parent_id,
-                 "priority" => priority
+                 "priority" => priority,
+                 "path_name" => "filtering test"
                }
              ] == json_response(conn, 200)["data"]
     end
