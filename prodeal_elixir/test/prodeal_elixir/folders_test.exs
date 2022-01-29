@@ -54,18 +54,33 @@ defmodule ProdealElixir.FoldersTest do
   end
 
   describe "list folders filtering" do
-    test "list_folders_filtering/4 returns the folder with given item_name" do
-      %Folder{item_name: item_name} =
-        folder_to_be_filtered = folder_fixture(%{item_name: "filtering_test"})
+    test "list_folders_filtering/4 returns only all folders with given item_name containing its path_name" do
+      item_name = "filtering_test"
+
+      folder_fixture(%{item_name: "different_item_name"})
+      %Folder{id: root_id} = folder_fixture(%{item_name: "filtering_test"})
+      %Folder{id: folder_id} = folder_fixture(%{item_name: "filtering_test", parent_id: root_id})
+      %Folder{} = folder_fixture(%{item_name: "filtering_test", parent_id: folder_id})
 
       {:ok, filtered_folders} = Folders.list_folders_filtering(:item_name, item_name, 0, 20)
 
-      assert filtered_folders == [folder_to_be_filtered]
-      assert length(filtered_folders) == 1
+      expected_path_names = [
+        "filtering_test",
+        "filtering_test/filtering_test",
+        "filtering_test/filtering_test/filtering_test"
+      ]
+
+      Enum.each(filtered_folders, fn folder ->
+        assert folder.path_name in expected_path_names
+      end)
+
+      assert length(filtered_folders) == 3
     end
 
-    test "list_folders_filtering/4 returns all folders with given item_name" do
+    test "list_folders_filtering/4 returns only all folders with given item_name" do
       item_name = "filtering_test"
+
+      folder_fixture(%{item_name: "different_item_name"})
 
       Enum.each(0..5, fn _x ->
         folder_fixture(%{item_name: item_name})
