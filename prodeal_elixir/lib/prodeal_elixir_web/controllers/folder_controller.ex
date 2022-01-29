@@ -8,7 +8,7 @@ defmodule ProdealElixirWeb.FolderController do
 
   plug ProdealElixir.PaginationParams, :pagination when action in [:index]
 
-  def index(conn, %{"item_name" => item_name} = params) do
+  def index(conn, %{"item_name" => item_name}) do
     limit = conn.assigns[:pagination].per_page
     offset = calculate_pagination_offset(conn.assigns[:pagination].page, limit)
 
@@ -47,7 +47,7 @@ defmodule ProdealElixirWeb.FolderController do
     end
   end
 
-  def index(conn, params) do
+  def index(conn, _params) do
     limit = conn.assigns[:pagination].per_page
     offset = calculate_pagination_offset(conn.assigns[:pagination].page, limit)
 
@@ -73,17 +73,23 @@ defmodule ProdealElixirWeb.FolderController do
 
   @spec get_prev_page(integer()) :: nil | String.t()
   defp get_prev_page(page) when is_integer(page) and page > 1 do
-    "#{page - 1}"
+    page
+    |> Kernel.-(1)
+    |> Integer.to_string()
   end
 
   defp get_prev_page(_page), do: nil
 
   @spec get_next_page(integer(), integer(), integer()) :: nil | String.t()
-  defp get_next_page(folders_count, per_page, page) when folders_count < per_page do
+  defp get_next_page(folders_count, per_page, _page) when folders_count < per_page do
     nil
   end
 
-  defp get_next_page(folders_count, per_page, page), do: "#{page + 1}"
+  defp get_next_page(_folders_count, _per_page, page) do
+    page
+    |> Kernel.+(1)
+    |> Integer.to_string()
+  end
 
   @spec get_total_pages(integer(), integer()) :: String.t()
   defp get_total_pages(folders_count, per_page) when is_integer(per_page) do
