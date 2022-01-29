@@ -26,7 +26,11 @@ defmodule ProdealElixirWeb.FolderController do
              limit
            ) do
       pagintation_data =
-        get_pagination_data(conn.assigns[:pagination].page, conn.assigns[:pagination].per_page)
+        get_pagination_data(
+          length(folders),
+          conn.assigns[:pagination].page,
+          conn.assigns[:pagination].per_page
+        )
 
       render(conn, "index.json", %{folders: folders, pagination_data: pagintation_data})
     else
@@ -44,7 +48,11 @@ defmodule ProdealElixirWeb.FolderController do
 
     with {:ok, folders} <- Folders.get_folders_by(:item_name, item_name, offset, limit) do
       pagintation_data =
-        get_pagination_data(conn.assigns[:pagination].page, conn.assigns[:pagination].per_page)
+        get_pagination_data(
+          length(folders),
+          conn.assigns[:pagination].page,
+          conn.assigns[:pagination].per_page
+        )
 
       render(conn, "index.json", %{folders: folders, pagination_data: pagintation_data})
     else
@@ -65,7 +73,11 @@ defmodule ProdealElixirWeb.FolderController do
          {:ok, folders} <-
            Folders.sort_folders_by(casted_sort_term, casted_order_term, offset, limit) do
       pagintation_data =
-        get_pagination_data(conn.assigns[:pagination].page, conn.assigns[:pagination].per_page)
+        get_pagination_data(
+          length(folders),
+          conn.assigns[:pagination].page,
+          conn.assigns[:pagination].per_page
+        )
 
       render(conn, "index.json", %{folders: folders, pagination_data: pagintation_data})
     else
@@ -84,7 +96,11 @@ defmodule ProdealElixirWeb.FolderController do
     folders = Folders.list_folders(offset, limit)
 
     pagintation_data =
-      get_pagination_data(conn.assigns[:pagination].page, conn.assigns[:pagination].per_page)
+      get_pagination_data(
+        length(folders),
+        conn.assigns[:pagination].page,
+        conn.assigns[:pagination].per_page
+      )
 
     render(conn, "index.json", %{folders: folders, pagination_data: pagintation_data})
   end
@@ -134,10 +150,8 @@ defmodule ProdealElixirWeb.FolderController do
     |> Integer.to_string()
   end
 
-  @spec get_pagination_data(integer(), integer()) :: map
-  defp get_pagination_data(page, per_page) do
-    folders_count = length(Folders.list_folders())
-
+  @spec get_pagination_data(integer(), integer(), integer()) :: map
+  defp get_pagination_data(folders_count, page, per_page) do
     %{
       prev_page: get_prev_page(page),
       next_page: get_next_page(folders_count, per_page, page),
