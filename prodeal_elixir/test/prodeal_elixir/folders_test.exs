@@ -14,6 +14,11 @@ defmodule ProdealElixir.FoldersTest do
       folder = folder_fixture()
       assert Folders.list_folders() == [folder]
     end
+
+    test "list_folders/2 returns all folders" do
+      folder = folder_fixture()
+      assert Folders.list_folders(0, 20) == [folder]
+    end
   end
 
   describe "get folder" do
@@ -22,32 +27,32 @@ defmodule ProdealElixir.FoldersTest do
       assert Folders.get_folder!(folder.id) == folder
     end
 
-    test "get_folders_by/1 returns the folder with given item_name" do
+    test "get_folders_by/4 returns the folder with given item_name" do
       %Folder{item_name: item_name} =
         folder_to_be_filtered = folder_fixture(%{item_name: "filtering_test"})
 
-      {:ok, filtered_folders} = Folders.get_folders_by(:item_name, item_name)
+      {:ok, filtered_folders} = Folders.get_folders_by(:item_name, item_name, 0, 20)
 
       assert filtered_folders == [folder_to_be_filtered]
       assert length(filtered_folders) == 1
     end
 
-    test "get_folders_by/1 returns all folders with given item_name" do
+    test "get_folders_by/4 returns all folders with given item_name" do
       item_name = "filtering_test"
 
       Enum.each(0..5, fn _x ->
         folder_fixture(%{item_name: item_name})
       end)
 
-      {:ok, filtered_folders} = Folders.get_folders_by(:item_name, item_name)
+      {:ok, filtered_folders} = Folders.get_folders_by(:item_name, item_name, 0, 20)
 
       assert length(filtered_folders) == 6
     end
 
-    test "get_folders_by/1 when clause not matching" do
+    test "get_folders_by/4 when clause not matching" do
       item_name = "filtering_test"
 
-      {:error, error} = Folders.get_folders_by(:other_field, item_name)
+      {:error, error} = Folders.get_folders_by(:other_field, item_name, 0, 20)
 
       assert error == :invalid_filtering_arguments
     end
@@ -116,28 +121,28 @@ defmodule ProdealElixir.FoldersTest do
   end
 
   describe "sort folders" do
-    test "sort_folders_by/1 returns ordered folders decrementally" do
+    test "sort_folders_by/4 returns ordered folders decrementally" do
       %Folder{} = folder_fixture(%{priority: 4})
       %Folder{} = folder_fixture(%{priority: 3})
 
-      {:ok, [first | [last]]} = Folders.sort_folders_by(:priority, :desc)
+      {:ok, [first | [last]]} = Folders.sort_folders_by(:priority, :desc, 0, 20)
 
       assert first.priority == 4
       assert last.priority == 3
     end
 
-    test "sort_folders_by/1 returns ordered folders incrementally" do
+    test "sort_folders_by/4 returns ordered folders incrementally" do
       %Folder{} = folder_fixture(%{priority: 3})
       %Folder{} = folder_fixture(%{priority: 4})
 
-      {:ok, [first | [last]]} = Folders.sort_folders_by(:priority, :asc)
+      {:ok, [first | [last]]} = Folders.sort_folders_by(:priority, :asc, 0, 20)
 
       assert first.priority == 3
       assert last.priority == 4
     end
 
-    test "sort_folders_by/1 when clause not matching" do
-      {:error, error} = Folders.sort_folders_by(:other_field, :desc)
+    test "sort_folders_by/4 when clause not matching" do
+      {:error, error} = Folders.sort_folders_by(:other_field, :desc, 0, 20)
 
       assert error == :invalid_sorting_arguments
     end

@@ -11,22 +11,32 @@ defmodule ProdealElixir.Folders do
   @doc """
   Returns the list of folders.
   """
-  def list_folders do
-    Repo.all(Folder)
+  @spec list_folders() :: [%Folder{}]
+  def list_folders() do
+    from(f in Folder, select: f)
+    |> Repo.all()
+  end
+
+  @spec list_folders(integer(), integer()) :: [%Folder{}]
+  def list_folders(offset, limit) do
+    from(f in Folder, limit: ^limit, offset: ^offset, select: f)
+    |> Repo.all()
   end
 
   @doc """
   Gets folders by item_name.
   """
-  @spec get_folders_by(filter_by :: atom, filter :: String.t()) ::
+  @spec get_folders_by(filter_by :: atom, filter :: String.t(), integer(), integer()) ::
           {:ok, [%Folder{}]} | {:error, String.t()}
-  def get_folders_by(:item_name, filter) do
-    query = from f in Folder, where: f.item_name == ^filter, select: f
+  def get_folders_by(:item_name, filter, offset, limit) do
+    query =
+      from f in Folder, where: f.item_name == ^filter, limit: ^limit, offset: ^offset, select: f
 
     {:ok, Repo.all(query)}
   end
 
-  def get_folders_by(_filter_by, _filter), do: {:error, :invalid_filtering_arguments}
+  def get_folders_by(_filter_by, _filter, _offset, _limit),
+    do: {:error, :invalid_filtering_arguments}
 
   @doc """
   Gets a single folder.
@@ -65,18 +75,23 @@ defmodule ProdealElixir.Folders do
     Folder.changeset(folder, attrs)
   end
 
-  @spec sort_folders_by(sort_by :: atom, order_by :: String.t()) :: [%Folder{}]
-  def sort_folders_by(:priority, :desc) do
-    query = from f in Folder, order_by: [desc: f.priority], select: f
+  @spec sort_folders_by(sort_by :: atom, order_by :: String.t(), integer(), integer()) :: [
+          %Folder{}
+        ]
+  def sort_folders_by(:priority, :desc, offset, limit) do
+    query =
+      from f in Folder, order_by: [desc: f.priority], limit: ^limit, offset: ^offset, select: f
 
     {:ok, Repo.all(query)}
   end
 
-  def sort_folders_by(:priority, :asc) do
-    query = from f in Folder, order_by: [asc: f.priority], select: f
+  def sort_folders_by(:priority, :asc, offset, limit) do
+    query =
+      from f in Folder, order_by: [asc: f.priority], limit: ^limit, offset: ^offset, select: f
 
     {:ok, Repo.all(query)}
   end
 
-  def sort_folders_by(_sort_by, _order_by), do: {:error, :invalid_sorting_arguments}
+  def sort_folders_by(_sort_by, _order_by, _offset, _limit),
+    do: {:error, :invalid_sorting_arguments}
 end

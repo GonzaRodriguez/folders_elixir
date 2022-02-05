@@ -6,6 +6,8 @@ defmodule ProdealElixirWeb.FolderControllerTest do
   alias ProdealElixir.Folders.Folder
   alias ProdealElixir.Folders
 
+  @default_per_page 2
+
   setup %{conn: conn} do
     {:ok, conn: put_req_header(conn, "accept", "application/json")}
   end
@@ -87,6 +89,30 @@ defmodule ProdealElixirWeb.FolderControllerTest do
       json_response(conn, 200)["data"]
       |> Enum.map(fn %{"priority" => priority} -> priority end)
       |> assert(sorted_priorities)
+    end
+  end
+
+  describe "pagination" do
+    setup do
+      Enum.each(0..5, fn _ -> folder_fixture() end)
+    end
+
+    test "when no pagination data is provided", %{conn: conn} do
+      conn = get(conn, Routes.folder_path(conn, :index))
+
+      assert @default_per_page == length(json_response(conn, 200)["data"])
+
+      assert %{"next_page" => "2", "per_page" => "2", "prev_page" => nil, "total_pages" => "3"} ==
+               json_response(conn, 200)["pagination_data"]
+    end
+
+    test "with custom data", %{conn: conn} do
+      conn = get(conn, Routes.folder_path(conn, :index, %{page: 2, per_page: 3}))
+
+      assert 3 == length(json_response(conn, 200)["data"])
+
+      assert %{"next_page" => "3", "per_page" => "3", "prev_page" => "1", "total_pages" => "2"} ==
+               json_response(conn, 200)["pagination_data"]
     end
   end
 
