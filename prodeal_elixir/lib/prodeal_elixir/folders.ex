@@ -94,4 +94,31 @@ defmodule ProdealElixir.Folders do
 
   def sort_folders_by(_sort_by, _order_by, _offset, _limit),
     do: {:error, :invalid_sorting_arguments}
+
+  def filter_and_sort_folders(:item_name, filter, :priority, :asc, offset, limit) do
+    query =
+      from f in Folder,
+        where: f.item_name == ^filter,
+        order_by: [asc: f.priority],
+        limit: ^limit,
+        offset: ^offset,
+        select: f
+
+    {:ok, Repo.all(query)}
+  end
+
+  def filter_and_sort_folders(:item_name, filter, :priority, :desc, offset, limit) do
+    query =
+      from f in Folder,
+        where: f.item_name == ^filter,
+        order_by: [desc: f.priority],
+        limit: ^limit,
+        offset: ^offset,
+        select: f
+
+    {:ok, Repo.all(query)}
+  end
+
+  def filter_and_sort_folders(_filter_by, _filter, _sort_by, _order_by, _offset, _limit),
+    do: {:error, :invalid_arguments}
 end

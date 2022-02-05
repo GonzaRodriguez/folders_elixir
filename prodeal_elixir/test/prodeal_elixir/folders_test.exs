@@ -147,4 +147,37 @@ defmodule ProdealElixir.FoldersTest do
       assert error == :invalid_sorting_arguments
     end
   end
+
+  describe "filter_and_sort_folders" do
+    test "filter_and_sort_folders/6 returns filtered and ordered folders decrementally" do
+      %Folder{} = folder_fixture(%{item_name: "name", priority: 4})
+      %Folder{} = folder_fixture(%{item_name: "name", priority: 3})
+      %Folder{} = folder_fixture(%{priority: 1})
+
+      {:ok, [first | [last]]} =
+        Folders.filter_and_sort_folders(:item_name, "name", :priority, :desc, 0, 20)
+
+      assert first.priority == 4
+      assert last.priority == 3
+    end
+
+    test "filter_and_sort_folders/6 returns filtered and ordered folders incrementally" do
+      %Folder{} = folder_fixture(%{item_name: "name", priority: 4})
+      %Folder{} = folder_fixture(%{item_name: "name", priority: 3})
+      %Folder{} = folder_fixture(%{priority: 1})
+
+      {:ok, [first | [last]]} =
+        Folders.filter_and_sort_folders(:item_name, "name", :priority, :asc, 0, 20)
+
+      assert first.priority == 3
+      assert last.priority == 4
+    end
+
+    test "filter_and_sort_folders/6 when clause not matching" do
+      {:error, error} =
+        Folders.filter_and_sort_folders(:item_name, "name", :other_field, :desc, 0, 20)
+
+      assert error == :invalid_arguments
+    end
+  end
 end
