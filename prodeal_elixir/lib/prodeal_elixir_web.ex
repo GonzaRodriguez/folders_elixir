@@ -75,4 +75,37 @@ defmodule ProdealElixirWeb do
   defmacro __using__(which) when is_atom(which) do
     apply(__MODULE__, which, [])
   end
+
+  def params do
+    quote do
+      import Plug.Conn
+      import Ecto.Query
+      use Phoenix.Controller
+
+      def init(options), do: options
+
+      def error_messages(changeset) do
+        Ecto.Changeset.traverse_errors(changeset, fn {msg, opts} ->
+          Enum.reduce(opts, msg, fn {key, value}, acc ->
+            String.replace(acc, "%{#{key}}", to_string(value))
+          end)
+        end)
+      end
+
+      def call(conn, key) do
+        changeset = __MODULE__.changeset(struct(__MODULE__), conn.params)
+
+        if changeset.valid? do
+          validated_params = Map.merge(struct(__MODULE__), changeset.changes)
+
+          conn |> assign(key, validated_params)
+        else
+          conn
+          |> put_status(:unprocessable_entity)
+          |> json(%{error: __MODULE__.error_messages(changeset)})
+          |> halt
+        end
+      end
+    end
+  end
 end
