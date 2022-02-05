@@ -5,6 +5,7 @@ defmodule ProdealElixir.Folders.Folder do
   schema "folders" do
     field :item_name, :string
     field :priority, :integer
+    field :path_name, :string, virtual: true
 
     belongs_to :parent, ProdealElixir.Folders.Folder
 

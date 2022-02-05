@@ -29,7 +29,8 @@ defmodule ProdealElixirWeb.FolderControllerTest do
                  "id" => id,
                  "item_name" => item_name,
                  "parent_id" => parent_id,
-                 "priority" => priority
+                 "priority" => priority,
+                 "path_name" => "some item_name"
                }
              ] == json_response(conn, 200)["data"]
     end
@@ -51,7 +52,8 @@ defmodule ProdealElixirWeb.FolderControllerTest do
                  "id" => id,
                  "item_name" => item_name,
                  "parent_id" => parent_id,
-                 "priority" => priority
+                 "priority" => priority,
+                 "path_name" => "filtering test"
                }
              ] == json_response(conn, 200)["data"]
     end
@@ -157,6 +159,60 @@ defmodule ProdealElixirWeb.FolderControllerTest do
 
       assert %{"next_page" => "3", "per_page" => "3", "prev_page" => "1", "total_pages" => "1"} ==
                json_response(conn, 200)["pagination_data"]
+    end
+  end
+
+  describe "path_name" do
+    test "return expected path_name", %{conn: conn} do
+      %Folder{
+        id: root_id,
+        item_name: root_item_name,
+        parent_id: root_parent_id,
+        priority: root_priority
+      } = folder_fixture(%{item_name: "Root"})
+
+      %Folder{
+        id: folder_id,
+        item_name: folder_item_name,
+        parent_id: folder_parent_id,
+        priority: folder_priority
+      } = folder_fixture(%{item_name: "Folder", parent_id: root_id})
+
+      %Folder{
+        id: sub_folder_id,
+        item_name: sub_folder_item_name,
+        parent_id: sub_folder_parent_id,
+        priority: sub_folder_priority
+      } = folder_fixture(%{item_name: "Sub Folder", parent_id: folder_id})
+
+      expexted_folders = [
+        %{
+          "id" => root_id,
+          "item_name" => root_item_name,
+          "parent_id" => root_parent_id,
+          "priority" => root_priority,
+          "path_name" => "Root"
+        },
+        %{
+          "id" => folder_id,
+          "item_name" => folder_item_name,
+          "parent_id" => folder_parent_id,
+          "priority" => folder_priority,
+          "path_name" => "Root/Folder"
+        },
+        %{
+          "id" => sub_folder_id,
+          "item_name" => sub_folder_item_name,
+          "parent_id" => sub_folder_parent_id,
+          "priority" => sub_folder_priority,
+          "path_name" => "Root/Folder/Sub Folder"
+        }
+      ]
+
+      conn = get(conn, Routes.folder_path(conn, :index, %{page: 1, per_page: 3}))
+
+      assert expexted_folders ==
+               json_response(conn, 200)["data"]
     end
   end
 

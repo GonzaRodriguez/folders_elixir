@@ -14,7 +14,8 @@ defmodule ProdealElixirWeb.FolderView do
       id: folder.id,
       parent_id: folder.parent_id,
       item_name: folder.item_name,
-      priority: folder.priority
+      priority: folder.priority,
+      path_name: folder.path_name
     }
   end
 end
