@@ -14,11 +14,16 @@ defmodule ProdealElixirWeb.FolderController do
     limit = conn.assigns[:pagination].per_page
     offset = calculate_pagination_offset(conn.assigns[:pagination].page, limit)
 
-    with {:ok, %{sort_term: casted_sort_term, order_term: casted_order_term}} <-
+    with {:ok,
+          %{
+            sort_term: casted_sort_term,
+            order_term: casted_order_term,
+            filter_by: casted_filter_by
+          }} <-
            cast_params(params),
          {:ok, folders} <-
-           Folders.filter_and_sort_folders(
-             :item_name,
+           Folders.list_folders_filtering_and_sorting(
+             casted_filter_by,
              item_name,
              casted_sort_term,
              casted_order_term,
@@ -26,7 +31,11 @@ defmodule ProdealElixirWeb.FolderController do
              limit
            ) do
       pagintation_data =
-        get_pagination_data(conn.assigns[:pagination].page, conn.assigns[:pagination].per_page)
+        get_pagination_data(
+          length(folders),
+          conn.assigns[:pagination].page,
+          conn.assigns[:pagination].per_page
+        )
 
       render(conn, "index.json", %{folders: folders, pagination_data: pagintation_data})
     else
@@ -38,13 +47,20 @@ defmodule ProdealElixirWeb.FolderController do
     end
   end
 
-  def index(conn, %{"item_name" => item_name}) do
+  def index(conn, %{"item_name" => item_name} = params) do
     limit = conn.assigns[:pagination].per_page
     offset = calculate_pagination_offset(conn.assigns[:pagination].page, limit)
 
-    with {:ok, folders} <- Folders.get_folders_by(:item_name, item_name, offset, limit) do
+    with {:ok, %{filter_by: casted_filter_by}} <-
+           cast_params(params),
+         {:ok, folders} <-
+           Folders.list_folders_filtering(casted_filter_by, item_name, offset, limit) do
       pagintation_data =
-        get_pagination_data(conn.assigns[:pagination].page, conn.assigns[:pagination].per_page)
+        get_pagination_data(
+          length(folders),
+          conn.assigns[:pagination].page,
+          conn.assigns[:pagination].per_page
+        )
 
       render(conn, "index.json", %{folders: folders, pagination_data: pagintation_data})
     else
@@ -63,9 +79,13 @@ defmodule ProdealElixirWeb.FolderController do
     with {:ok, %{sort_term: casted_sort_term, order_term: casted_order_term}} <-
            cast_params(params),
          {:ok, folders} <-
-           Folders.sort_folders_by(casted_sort_term, casted_order_term, offset, limit) do
+           Folders.list_folders_sorting(casted_sort_term, casted_order_term, offset, limit) do
       pagintation_data =
-        get_pagination_data(conn.assigns[:pagination].page, conn.assigns[:pagination].per_page)
+        get_pagination_data(
+          length(folders),
+          conn.assigns[:pagination].page,
+          conn.assigns[:pagination].per_page
+        )
 
       render(conn, "index.json", %{folders: folders, pagination_data: pagintation_data})
     else
@@ -81,13 +101,34 @@ defmodule ProdealElixirWeb.FolderController do
     limit = conn.assigns[:pagination].per_page
     offset = calculate_pagination_offset(conn.assigns[:pagination].page, limit)
 
-    folders = Folders.list_folders(offset, limit)
+    {:ok, folders} = Folders.list_folders(offset, limit)
 
     pagintation_data =
-      get_pagination_data(conn.assigns[:pagination].page, conn.assigns[:pagination].per_page)
+      get_pagination_data(
+        length(folders),
+        conn.assigns[:pagination].page,
+        conn.assigns[:pagination].per_page
+      )
 
     render(conn, "index.json", %{folders: folders, pagination_data: pagintation_data})
   end
+
+  defp cast_params(%{"item_name" => _filter, "sort_by" => sort_term} = params) do
+    order_by =
+      unless is_nil(params["order_by"]),
+        do: String.to_atom(params["order_by"]),
+        else: @default_order_by
+
+    {:ok,
+     %{
+       sort_term: String.to_atom(sort_term),
+       order_term: order_by,
+       filter_by: String.to_atom("item_name")
+     }}
+  end
+
+  defp cast_params(%{"item_name" => _filter}),
+    do: {:ok, %{filter_by: String.to_atom("item_name")}}
 
   defp cast_params(%{"sort_by" => sort_term} = params) do
     order_by =
@@ -134,10 +175,8 @@ defmodule ProdealElixirWeb.FolderController do
     |> Integer.to_string()
   end
 
-  @spec get_pagination_data(integer(), integer()) :: map
-  defp get_pagination_data(page, per_page) do
-    folders_count = length(Folders.list_folders())
-
+  @spec get_pagination_data(integer(), integer(), integer()) :: map
+  defp get_pagination_data(folders_count, page, per_page) do
     %{
       prev_page: get_prev_page(page),
       next_page: get_next_page(folders_count, per_page, page),

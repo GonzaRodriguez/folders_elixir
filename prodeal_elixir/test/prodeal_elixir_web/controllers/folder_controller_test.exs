@@ -70,8 +70,10 @@ defmodule ProdealElixirWeb.FolderControllerTest do
 
       conn = get(conn, Routes.folder_path(conn, :index, %{sort_by: "priority", order_by: "asc"}))
 
+      {:ok, folders} = Folders.list_folders()
+
       sorted_priorities =
-        Folders.list_folders()
+        folders
         |> sorted_folders_priorities(:asc)
 
       json_response(conn, 200)["data"]
@@ -85,8 +87,10 @@ defmodule ProdealElixirWeb.FolderControllerTest do
 
       conn = get(conn, Routes.folder_path(conn, :index, %{sort_by: "priority", order_by: "desc"}))
 
+      {:ok, folders} = Folders.list_folders()
+
       sorted_priorities =
-        Folders.list_folders()
+        folders
         |> sorted_folders_priorities(:desc)
 
       json_response(conn, 200)["data"]
@@ -100,8 +104,10 @@ defmodule ProdealElixirWeb.FolderControllerTest do
 
       conn = get(conn, Routes.folder_path(conn, :index, %{sort_by: "priority"}))
 
+      {:ok, folders} = Folders.list_folders()
+
       sorted_priorities =
-        Folders.list_folders()
+        folders
         |> sorted_folders_priorities(:desc)
 
       json_response(conn, 200)["data"]
@@ -117,8 +123,10 @@ defmodule ProdealElixirWeb.FolderControllerTest do
       conn =
         get(conn, Routes.folder_path(conn, :index, %{sort_by: "priority", item_name: "name"}))
 
+      {:ok, folders} = Folders.list_folders()
+
       sorted_priorities =
-        Folders.list_folders()
+        folders
         |> Enum.filter(fn %Folder{item_name: item_name} -> item_name != "name" end)
         |> sorted_folders_priorities(:desc)
 
@@ -138,7 +146,7 @@ defmodule ProdealElixirWeb.FolderControllerTest do
 
       assert PaginationParams.per_page_default() == length(json_response(conn, 200)["data"])
 
-      assert %{"next_page" => "2", "per_page" => "2", "prev_page" => nil, "total_pages" => "3"} ==
+      assert %{"next_page" => "2", "per_page" => "2", "prev_page" => nil, "total_pages" => "1"} ==
                json_response(conn, 200)["pagination_data"]
     end
 
@@ -147,7 +155,7 @@ defmodule ProdealElixirWeb.FolderControllerTest do
 
       assert 3 == length(json_response(conn, 200)["data"])
 
-      assert %{"next_page" => "3", "per_page" => "3", "prev_page" => "1", "total_pages" => "2"} ==
+      assert %{"next_page" => "3", "per_page" => "3", "prev_page" => "1", "total_pages" => "1"} ==
                json_response(conn, 200)["pagination_data"]
     end
   end
