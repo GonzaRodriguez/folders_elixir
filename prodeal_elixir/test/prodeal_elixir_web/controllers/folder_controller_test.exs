@@ -31,5 +31,35 @@ defmodule ProdealElixirWeb.FolderControllerTest do
                }
              ] == json_response(conn, 200)["data"]
     end
+
+    test "when filtering folders", %{conn: conn} do
+      folder_fixture()
+
+      %Folder{
+        id: id,
+        item_name: item_name,
+        parent_id: parent_id,
+        priority: priority
+      } = folder_fixture(%{item_name: "filtering test"})
+
+      conn = get(conn, Routes.folder_path(conn, :index, %{item_name: "filtering test"}))
+
+      assert [
+               %{
+                 "id" => id,
+                 "item_name" => item_name,
+                 "parent_id" => parent_id,
+                 "priority" => priority
+               }
+             ] == json_response(conn, 200)["data"]
+    end
+
+    test "when filtering folders should return no folder", %{conn: conn} do
+      folder_fixture()
+
+      conn = get(conn, Routes.folder_path(conn, :index, %{item_name: "filtering test"}))
+
+      assert json_response(conn, 200)["data"] == []
+    end
   end
 end

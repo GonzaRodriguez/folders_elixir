@@ -16,6 +16,19 @@ defmodule ProdealElixir.Folders do
   end
 
   @doc """
+  Gets folders by item_name.
+  """
+  @spec get_folders_by(filter_by :: atom, filter :: String.t()) ::
+          {:ok, [%Folder{}]} | {:error, String.t()}
+  def get_folders_by(:item_name, filter) do
+    query = from f in Folder, where: f.item_name == ^filter, select: f
+
+    {:ok, Repo.all(query)}
+  end
+
+  def get_folders_by(_filter_by, _filter), do: {:error, :invalid_filtering_arguments}
+
+  @doc """
   Gets a single folder.
   """
   def get_folder!(id), do: Repo.get!(Folder, id)

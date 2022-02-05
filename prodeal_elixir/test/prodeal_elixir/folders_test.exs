@@ -3,23 +3,57 @@ defmodule ProdealElixir.FoldersTest do
 
   alias ProdealElixir.Folders
 
-  describe "folders" do
-    alias ProdealElixir.Folders.Folder
+  alias ProdealElixir.Folders.Folder
 
-    import ProdealElixir.FoldersFixtures
+  import ProdealElixir.FoldersFixtures
 
-    @invalid_attrs %{item_name: nil, parent_id: nil, priority: nil}
+  @invalid_attrs %{item_name: nil, parent_id: nil, priority: nil}
 
+  describe "list folders" do
     test "list_folders/0 returns all folders" do
       folder = folder_fixture()
       assert Folders.list_folders() == [folder]
     end
+  end
 
+  describe "get folder" do
     test "get_folder!/1 returns the folder with given id" do
       folder = folder_fixture()
       assert Folders.get_folder!(folder.id) == folder
     end
 
+    test "get_folders_by/1 returns the folder with given item_name" do
+      %Folder{item_name: item_name} =
+        folder_to_be_filtered = folder_fixture(%{item_name: "filtering_test"})
+
+      {:ok, filtered_folders} = Folders.get_folders_by(:item_name, item_name)
+
+      assert filtered_folders == [folder_to_be_filtered]
+      assert length(filtered_folders) == 1
+    end
+
+    test "get_folders_by/1 returns all folders with given item_name" do
+      item_name = "filtering_test"
+
+      Enum.each(0..5, fn _x ->
+        folder_fixture(%{item_name: item_name})
+      end)
+
+      {:ok, filtered_folders} = Folders.get_folders_by(:item_name, item_name)
+
+      assert length(filtered_folders) == 6
+    end
+
+    test "get_folders_by/1 when clause not matching" do
+      item_name = "filtering_test"
+
+      {:error, error} = Folders.get_folders_by(:other_field, item_name)
+
+      assert error == :invalid_filtering_arguments
+    end
+  end
+
+  describe "create folder" do
     test "create_folder/1 with valid data creates a folder" do
       valid_attrs = %{item_name: "some item_name", parent_id: nil, priority: 42}
 
@@ -43,7 +77,9 @@ defmodule ProdealElixir.FoldersTest do
       assert folder.parent_id == parent_folder.id
       assert folder.priority == 42
     end
+  end
 
+  describe "update folder" do
     test "update_folder/2 with valid data updates the folder" do
       folder = folder_fixture()
       update_attrs = %{item_name: "some updated item_name", parent_id: nil, priority: 43}
@@ -60,14 +96,18 @@ defmodule ProdealElixir.FoldersTest do
       assert {:error, %Ecto.Changeset{}} = Folders.update_folder(folder, @invalid_attrs)
       assert folder == Folders.get_folder!(folder.id)
     end
+  end
 
+  describe "delete folder" do
     test "delete_folder/1 deletes the folder" do
       folder = folder_fixture()
 
       assert {:ok, %Folder{}} = Folders.delete_folder(folder)
       assert_raise Ecto.NoResultsError, fn -> Folders.get_folder!(folder.id) end
     end
+  end
 
+  describe "change folder" do
     test "change_folder/1 returns a folder changeset" do
       folder = folder_fixture()
 
