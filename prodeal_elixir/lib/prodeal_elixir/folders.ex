@@ -64,4 +64,19 @@ defmodule ProdealElixir.Folders do
   def change_folder(%Folder{} = folder, attrs \\ %{}) do
     Folder.changeset(folder, attrs)
   end
+
+  @spec sort_folders_by(sort_by :: atom, order_by :: String.t()) :: [%Folder{}]
+  def sort_folders_by(:priority, :desc) do
+    query = from f in Folder, order_by: [desc: f.priority], select: f
+
+    {:ok, Repo.all(query)}
+  end
+
+  def sort_folders_by(:priority, :asc) do
+    query = from f in Folder, order_by: [asc: f.priority], select: f
+
+    {:ok, Repo.all(query)}
+  end
+
+  def sort_folders_by(_sort_by, _order_by), do: {:error, :invalid_sorting_arguments}
 end

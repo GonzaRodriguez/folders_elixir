@@ -4,6 +4,7 @@ defmodule ProdealElixirWeb.FolderControllerTest do
   import ProdealElixir.FoldersFixtures
 
   alias ProdealElixir.Folders.Folder
+  alias ProdealElixir.Folders
 
   setup %{conn: conn} do
     {:ok, conn: put_req_header(conn, "accept", "application/json")}
@@ -61,5 +62,37 @@ defmodule ProdealElixirWeb.FolderControllerTest do
 
       assert json_response(conn, 200)["data"] == []
     end
+
+    test "when sorting folders by priority incrementally", %{conn: conn} do
+      %Folder{} = folder_fixture(%{priority: 4})
+      %Folder{} = folder_fixture(%{priority: 3})
+
+      conn = get(conn, Routes.folder_path(conn, :index, %{sort_by: "priority", order_by: "asc"}))
+
+      sorted_priorities = sorted_folders_priorities(:asc)
+
+      json_response(conn, 200)["data"]
+      |> Enum.map(fn %{"priority" => priority} -> priority end)
+      |> assert(sorted_priorities)
+    end
+
+    test "when sorting folders by priority decrementally", %{conn: conn} do
+      %Folder{} = folder_fixture(%{priority: 4})
+      %Folder{} = folder_fixture(%{priority: 3})
+
+      conn = get(conn, Routes.folder_path(conn, :index, %{sort_by: "priority", order_by: "desc"}))
+
+      sorted_priorities = sorted_folders_priorities(:desc)
+
+      json_response(conn, 200)["data"]
+      |> Enum.map(fn %{"priority" => priority} -> priority end)
+      |> assert(sorted_priorities)
+    end
+  end
+
+  defp sorted_folders_priorities(order_by) when order_by in [:asc, :desc] do
+    Folders.list_folders()
+    |> Enum.sort_by(& &1.priority, order_by)
+    |> Enum.map(fn %Folder{priority: priority} -> priority end)
   end
 end
