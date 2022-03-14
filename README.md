@@ -1,14 +1,9 @@
-# ProDeal Elixir challenge
+# Elixir challenge
 
-## Test description
-
-### Backend Engineer Test A
+## Description
 
 #### Introduction
-In this test you need to create a web API using the JSON:API standard. It can be
-developed on any language, framework and database as long as there is an explanation of
-how to import the data and how to run the application. Extra points for candidates that are
-able to implement in Elixir, Phoenix and PostgreSQL.
+In this test you need to create a web API. Tech Stack Elixir, Phoenix and PostgreSQL.
 
 #### What you need to do
 
